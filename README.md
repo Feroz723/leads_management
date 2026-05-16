@@ -179,6 +179,7 @@ The backend validates auth payloads, lead payloads, query filters, sort order, a
 - **API Documentation**: [API.md](./API.md)
 - **Setup Instructions**: See [Local Setup](#local-setup) and [Docker Setup](#docker-setup)
 - **Environment Examples**: [backend/.env.example](./backend/.env.example) and [frontend/.env.example](./frontend/.env.example)
-- **Live Deployment**: [Add your live link here after deployment]
-- **Demo Video (Loom)**: [Add your Loom link here]
+- **Live Deployment**: [https://leads-management-kohl.vercel.app/](https://leads-management-kohl.vercel.app/)
+- **Demo Video (Drive)**: [https://drive.google.com/file/d/1o9WZb_gwmpQjbQZtcdOp8G90owe4NxPf/view?usp=sharing](https://drive.google.com/file/d/1o9WZb_gwmpQjbQZtcdOp8G90owe4NxPf/view?usp=sharing)
+
 
