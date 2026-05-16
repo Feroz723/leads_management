@@ -173,13 +173,12 @@ See [API.md](./API.md) for detailed request and response examples.
 
 The backend validates auth payloads, lead payloads, query filters, sort order, and pagination values. The frontend validates login, registration, and lead forms before submitting.
 
-## Submission Notes
+## Submission Details
 
-Include the following when submitting:
+- **GitHub Repository**: [https://github.com/Feroz723/leads_management.git](https://github.com/Feroz723/leads_management.git)
+- **API Documentation**: [API.md](./API.md)
+- **Setup Instructions**: See [Local Setup](#local-setup) and [Docker Setup](#docker-setup)
+- **Environment Examples**: [backend/.env.example](./backend/.env.example) and [frontend/.env.example](./frontend/.env.example)
+- **Live Deployment**: [Add your live link here after deployment]
+- **Demo Video (Loom)**: [Add your Loom link here]
 
-- GitHub repository URL
-- Setup instructions
-- API documentation
-- `.env.example` files
-- Deployment link, if available
-- Updated resume, if requested by the assignment
