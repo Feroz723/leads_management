@@ -41,12 +41,19 @@ export class LeadService {
   static async getLeads(
     filters: FilterOptions,
     sort: SortOptions,
-    pagination: PaginationOptions
+    pagination: PaginationOptions,
+    requesterId: string,
+    requesterRole: string
   ): Promise<PaginatedResponse<ILead>> {
     const { status, source, search } = filters;
     const { page, limit } = pagination;
 
     const filterQuery: Record<string, unknown> = {};
+
+    // Privacy Filter: Sales users only see their own leads
+    if (requesterRole !== 'admin') {
+      filterQuery.user = requesterId;
+    }
 
     if (status) {
       filterQuery.status = status;
@@ -82,28 +89,46 @@ export class LeadService {
     };
   }
 
-  static async getLeadById(id: string): Promise<ILead | null> {
-    return Lead.findById(id).exec();
+  static async getLeadById(id: string, requesterId: string, requesterRole: string): Promise<ILead | null> {
+    const query: Record<string, unknown> = { _id: id };
+    if (requesterRole !== 'admin') {
+      query.user = requesterId;
+    }
+    return Lead.findOne(query).exec();
   }
 
-  static async createLead(data: LeadCreateData): Promise<ILead> {
-    return Lead.create(data);
+  static async createLead(data: LeadCreateData, userId: string): Promise<ILead> {
+    return Lead.create({ ...data, user: userId });
   }
 
-  static async updateLead(id: string, data: LeadUpdateData): Promise<ILead | null> {
-    return Lead.findByIdAndUpdate(id, data, { new: true, runValidators: true }).exec();
+  static async updateLead(id: string, data: LeadUpdateData, requesterId: string, requesterRole: string): Promise<ILead | null> {
+    const query: Record<string, unknown> = { _id: id };
+    if (requesterRole !== 'admin') {
+      query.user = requesterId;
+    }
+    return Lead.findOneAndUpdate(query, data, { new: true, runValidators: true }).exec();
   }
 
-  static async deleteLead(id: string): Promise<ILead | null> {
-    return Lead.findByIdAndDelete(id).exec();
+  static async deleteLead(id: string, requesterId: string, requesterRole: string): Promise<ILead | null> {
+    const query: Record<string, unknown> = { _id: id };
+    // Only admins can delete, but we keep the query check for safety
+    if (requesterRole !== 'admin') {
+      query.user = requesterId;
+    }
+    return Lead.findOneAndDelete(query).exec();
   }
 
   static async exportLeads(
-    filters: FilterOptions
+    filters: FilterOptions,
+    requesterId: string,
+    requesterRole: string
   ): Promise<ILead[]> {
     const { status, source, search } = filters;
 
     const filterQuery: Record<string, unknown> = {};
+    if (requesterRole !== 'admin') {
+      filterQuery.user = requesterId;
+    }
 
     if (status) {
       filterQuery.status = status;
@@ -123,3 +148,4 @@ export class LeadService {
     return Lead.find(filterQuery).sort({ createdAt: -1 }).exec();
   }
 }
+

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { LeadService } from '../services/leadService';
 import { ILead } from '../models/Lead';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
 interface LeadFilters {
   status?: string;
@@ -80,6 +81,12 @@ export const getLeads = async (req: Request, res: Response, next: NextFunction):
     const sortOrder = parseSortOrder(req.query.sortOrder);
     const filters = getLeadFilters(req.query);
 
+    const user = (req as AuthenticatedRequest).user;
+    if (!user) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
     const result = await LeadService.getLeads(
       filters,
       {
@@ -88,7 +95,9 @@ export const getLeads = async (req: Request, res: Response, next: NextFunction):
       {
         page: pageNum,
         limit: limitNum
-      }
+      },
+      user.id,
+      user.role
     );
     
     res.status(200).json({
@@ -108,13 +117,13 @@ export const getLeads = async (req: Request, res: Response, next: NextFunction):
 
 export const getLeadById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const id = getRouteParam(req.params.id);
-    if (!id) {
-      res.status(400).json({ message: 'Lead ID is required' });
+    const user = (req as AuthenticatedRequest).user;
+    if (!user) {
+      res.status(401).json({ message: 'Unauthorized' });
       return;
     }
 
-    const lead = await LeadService.getLeadById(id);
+    const lead = await LeadService.getLeadById(id, user.id, user.role);
     
     if (!lead) {
       res.status(404).json({
@@ -135,8 +144,14 @@ export const getLeadById = async (req: Request, res: Response, next: NextFunctio
 
 export const createLead = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    const user = (req as AuthenticatedRequest).user;
+    if (!user) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
     const leadData = req.body;
-    const lead = await LeadService.createLead(leadData);
+    const lead = await LeadService.createLead(leadData, user.id);
     
     res.status(201).json({
       success: true,
@@ -149,14 +164,14 @@ export const createLead = async (req: Request, res: Response, next: NextFunction
 
 export const updateLead = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const id = getRouteParam(req.params.id);
-    if (!id) {
-      res.status(400).json({ message: 'Lead ID is required' });
+    const user = (req as AuthenticatedRequest).user;
+    if (!user) {
+      res.status(401).json({ message: 'Unauthorized' });
       return;
     }
 
     const leadData = req.body;
-    const lead = await LeadService.updateLead(id, leadData);
+    const lead = await LeadService.updateLead(id, leadData, user.id, user.role);
     
     if (!lead) {
       res.status(404).json({
@@ -177,13 +192,13 @@ export const updateLead = async (req: Request, res: Response, next: NextFunction
 
 export const deleteLead = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const id = getRouteParam(req.params.id);
-    if (!id) {
-      res.status(400).json({ message: 'Lead ID is required' });
+    const user = (req as AuthenticatedRequest).user;
+    if (!user) {
+      res.status(401).json({ message: 'Unauthorized' });
       return;
     }
 
-    const result = await LeadService.deleteLead(id);
+    const result = await LeadService.deleteLead(id, user.id, user.role);
     
     if (!result) {
       res.status(404).json({
@@ -203,12 +218,17 @@ export const deleteLead = async (req: Request, res: Response, next: NextFunction
 };
 
 export const exportLeads = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
+    const user = (req as AuthenticatedRequest).user;
+    if (!user) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
     const filters = {
       ...parseLegacyFilters(req.query.filters),
       ...getLeadFilters(req.query),
     };
-    const leads = await LeadService.exportLeads(filters);
+    const leads = await LeadService.exportLeads(filters, user.id, user.role);
     
     // Convert leads array to CSV string with proper escaping
     const csvString = leadsToCSV(leads);

@@ -5,6 +5,7 @@ export interface ILead extends Document {
   email: string;
   status: 'New' | 'Contacted' | 'Qualified' | 'Lost';
   source: 'Website' | 'Instagram' | 'Referral';
+  user: mongoose.Schema.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,6 +31,11 @@ const LeadSchema = new mongoose.Schema<ILead>(
     source: {
       type: String,
       enum: ['Website', 'Instagram', 'Referral'],
+      required: true,
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
   },
