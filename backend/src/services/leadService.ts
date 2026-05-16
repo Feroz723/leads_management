@@ -1,0 +1,125 @@
+import Lead, { ILead } from '../models/Lead';
+
+interface FilterOptions {
+  status?: string;
+  source?: string;
+  search?: string;
+}
+
+interface SortOptions {
+  createdAt: 'asc' | 'desc';
+}
+
+interface PaginationOptions {
+  page: number;
+  limit: number;
+}
+
+interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+interface LeadCreateData {
+  name: string;
+  email: string;
+  status?: 'New' | 'Contacted' | 'Qualified' | 'Lost';
+  source?: 'Website' | 'Instagram' | 'Referral';
+}
+
+interface LeadUpdateData {
+  name?: string;
+  email?: string;
+  status?: 'New' | 'Contacted' | 'Qualified' | 'Lost';
+  source?: 'Website' | 'Instagram' | 'Referral';
+}
+
+export class LeadService {
+  static async getLeads(
+    filters: FilterOptions,
+    sort: SortOptions,
+    pagination: PaginationOptions
+  ): Promise<PaginatedResponse<ILead>> {
+    const { status, source, search } = filters;
+    const { page, limit } = pagination;
+
+    const filterQuery: Record<string, unknown> = {};
+
+    if (status) {
+      filterQuery.status = status;
+    }
+
+    if (source) {
+      filterQuery.source = source;
+    }
+
+    if (search) {
+      filterQuery.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const sortQuery: Record<string, 1 | -1> = {
+      createdAt: sort.createdAt === 'desc' ? -1 : 1,
+    };
+
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      Lead.find(filterQuery).sort(sortQuery).skip(skip).limit(limit).exec(),
+      Lead.countDocuments(filterQuery),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    };
+  }
+
+  static async getLeadById(id: string): Promise<ILead | null> {
+    return Lead.findById(id).exec();
+  }
+
+  static async createLead(data: LeadCreateData): Promise<ILead> {
+    return Lead.create(data);
+  }
+
+  static async updateLead(id: string, data: LeadUpdateData): Promise<ILead | null> {
+    return Lead.findByIdAndUpdate(id, data, { new: true, runValidators: true }).exec();
+  }
+
+  static async deleteLead(id: string): Promise<ILead | null> {
+    return Lead.findByIdAndDelete(id).exec();
+  }
+
+  static async exportLeads(
+    filters: FilterOptions
+  ): Promise<ILead[]> {
+    const { status, source, search } = filters;
+
+    const filterQuery: Record<string, unknown> = {};
+
+    if (status) {
+      filterQuery.status = status;
+    }
+
+    if (source) {
+      filterQuery.source = source;
+    }
+
+    if (search) {
+      filterQuery.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    return Lead.find(filterQuery).sort({ createdAt: -1 }).exec();
+  }
+}
