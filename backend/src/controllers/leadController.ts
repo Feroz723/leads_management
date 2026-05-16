@@ -117,6 +117,12 @@ export const getLeads = async (req: Request, res: Response, next: NextFunction):
 
 export const getLeadById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    const id = getRouteParam(req.params.id);
+    if (!id) {
+      res.status(400).json({ message: 'Lead ID is required' });
+      return;
+    }
+
     const user = (req as AuthenticatedRequest).user;
     if (!user) {
       res.status(401).json({ message: 'Unauthorized' });
@@ -164,6 +170,12 @@ export const createLead = async (req: Request, res: Response, next: NextFunction
 
 export const updateLead = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    const id = getRouteParam(req.params.id);
+    if (!id) {
+      res.status(400).json({ message: 'Lead ID is required' });
+      return;
+    }
+
     const user = (req as AuthenticatedRequest).user;
     if (!user) {
       res.status(401).json({ message: 'Unauthorized' });
@@ -192,6 +204,12 @@ export const updateLead = async (req: Request, res: Response, next: NextFunction
 
 export const deleteLead = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    const id = getRouteParam(req.params.id);
+    if (!id) {
+      res.status(400).json({ message: 'Lead ID is required' });
+      return;
+    }
+
     const user = (req as AuthenticatedRequest).user;
     if (!user) {
       res.status(401).json({ message: 'Unauthorized' });

@@ -98,7 +98,7 @@ export class LeadService {
   }
 
   static async createLead(data: LeadCreateData, userId: string): Promise<ILead> {
-    return Lead.create({ ...data, user: userId });
+    return Lead.create({ ...data, user: userId as any });
   }
 
   static async updateLead(id: string, data: LeadUpdateData, requesterId: string, requesterRole: string): Promise<ILead | null> {
