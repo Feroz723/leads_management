@@ -218,6 +218,7 @@ export const deleteLead = async (req: Request, res: Response, next: NextFunction
 };
 
 export const exportLeads = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
     const user = (req as AuthenticatedRequest).user;
     if (!user) {
       res.status(401).json({ message: 'Unauthorized' });
